@@ -11,8 +11,9 @@ class AWGNChannel:
         return symbols + self.noise
 
 class SingleRayleighChannel:
-    def __init__(self, snr: float):
+    def __init__(self, snr: float, equalize: bool = False):
         self.snr = snr
+        self.equalize = equalize
 
     def __call__(self, symbols: np.ndarray) -> np.ndarray:
         noise = np.random.randn(len(symbols)) + 1j*np.random.randn(len(symbols))
@@ -21,7 +22,14 @@ class SingleRayleighChannel:
 
         unequalized = symbols * h + noise
         equalized = unequalized * np.conj(h) / np.abs(h)**2
-        return equalized 
+        if self.equalize:
+            return equalized 
+        else:
+            return unequalized
+        
+class EqualizedSingleRayleighChannel(SingleRayleighChannel):
+    def __init__(self, snr: float):
+        super().__init__(snr, equalize=True)
     
 class N_RayleighChannels:
     def __init__(self, num_channels: int, doppler_spread: float):
