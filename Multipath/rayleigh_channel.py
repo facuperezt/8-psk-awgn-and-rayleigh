@@ -30,6 +30,24 @@ class SingleRayleighChannel:
 class EqualizedSingleRayleighChannel(SingleRayleighChannel):
     def __init__(self, snr: float):
         super().__init__(snr, equalize=True)
+
+class MultipleRayleighChannels(SingleRayleighChannel):
+    def __init__(self, snr: float, num_channels: int = 20000):
+        super().__init__(snr)
+        self.num_channels = num_channels
+
+    def __call__(self, symbols: np.ndarray) -> np.ndarray:
+        noise = np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels)
+        noise *= 10**(-self.snr/20)/np.sqrt(2)
+        h = 1/np.sqrt(2) * (np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels))
+
+        symbols = symbols.reshape(-1, 1)
+        unequalized = symbols * h + noise
+        equalized = unequalized * np.conj(h) / np.abs(h)**2
+        if self.equalize:
+            return equalized.sum(axis=1)
+        else:
+            return unequalized.sum(axis=1)
     
 class N_RayleighChannels:
     def __init__(self, num_channels: int, doppler_spread: float):

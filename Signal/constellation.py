@@ -5,7 +5,10 @@ class Constellation:
     def __init__(self, modulation: int):
         self.modulation = modulation
         self.mod_delta = 2*np.pi/modulation
-        self.constellation = np.array([np.exp((self.mod_delta/2)*1j + 1j * self.mod_delta * i) for i in range(modulation)])
+        if modulation == 2:
+            self.constellation = np.array([-1+0j, 1+0j])
+        else:
+            self.constellation = np.array([np.exp((self.mod_delta/2)*1j + 1j * self.mod_delta * i) for i in range(modulation)])
         self.constellation_map = np.array([np.binary_repr(i, width=int(np.log2(modulation))) for i in range(modulation)])
 
 
