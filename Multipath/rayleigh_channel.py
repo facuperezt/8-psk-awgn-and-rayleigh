@@ -1,6 +1,8 @@
 import numpy as np
 
 class AWGNChannel:
+    name = "AWGN"
+
     def __init__(self, snr: float):
         self.snr = snr
         self.noise = None
@@ -11,6 +13,8 @@ class AWGNChannel:
         return symbols + self.noise
 
 class SingleRayleighChannel:
+    name = "Unequalized Single Rayleigh"
+
     def __init__(self, snr: float, equalize: bool = False):
         self.snr = snr
         self.equalize = equalize
@@ -28,6 +32,8 @@ class SingleRayleighChannel:
             return unequalized
         
 class EqualizedSingleRayleighChannel(SingleRayleighChannel):
+    name = "Equalized SingleRayleigh"
+
     def __init__(self, snr: float):
         super().__init__(snr, equalize=True)
 
