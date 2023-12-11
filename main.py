@@ -8,6 +8,7 @@ import collections
 from Multipath.rayleigh_channel import AWGNChannel, SingleRayleighChannel, EqualizedSingleRayleighChannel, MultipleRayleighChannels
 from Signal.signal import Signal, _pairwise_distance
 from Signal.constellation import Constellation
+from Signal.plotting import plot_constellation
 
 
 bit_error_rate_for_all_constellations = {}
@@ -35,23 +36,27 @@ for modulation in [2, 4, 8, 16]:
     axs[0, 2].set_title("Equalized Single Rayleigh", fontsize=10)
     bit_error_rate = np.zeros((len(all_snr), len(channel_classes)))
     for j, channel_class in enumerate(channel_classes):
-        # bit_error_rate = np.zeros(len(all_snr))
         for i, (snr, ax) in enumerate(zip(all_snr, axs[:, j])):
+
             channel = channel_class(snr)
-            rx_symbols = channel(signal.symbols)
-            rx_bits = signal.decode(rx_symbols)
-            recieved_signal = Signal(rx_bits, const)
-            bit_error_rate[i, j] = np.sum(np.abs(rx_bits - bit_stream))/n_bits
-            color = ["tab:green" if bit else "tab:red" for bit in recieved_signal.symbols == signal.symbols]
-            min_distance = _pairwise_distance(rx_symbols, const.constellation).min(axis=1)
-            ax.scatter(rx_symbols.real, rx_symbols.imag, color=color, alpha=0.5)
-            ax.set_ylabel(f"SNR {snr}dB", fontsize=8)
-            const.plot(ax=axs[i, j], flag = 2)
-            if not (const.modulation in rx_sym and channel.name in rx_sym[const.modulation]):
-                rx_sym[const.modulation][channel.name] = rx_symbols.reshape(1, -1)
-            else:
-                rx_data = rx_sym[const.modulation][channel.name]
-                rx_sym[const.modulation][channel.name] = np.concatenate((rx_data, rx_symbols.reshape(1,-1)))
+            rx_signal = plot_constellation(channel, signal, ax)
+            bit_error_rate[i, j] = np.sum(np.abs(rx_signal.bit_stream - bit_stream))/n_bits
+
+            # channel = channel_class(snr)
+            # rx_symbols = channel(signal.symbols)
+            # rx_bits = signal.decode(rx_symbols)
+            # recieved_signal = Signal(rx_bits, const)
+            # bit_error_rate[i, j] = np.sum(np.abs(rx_bits - bit_stream))/n_bits
+            # color = ["tab:green" if bit else "tab:red" for bit in recieved_signal.symbols == signal.symbols]
+            # min_distance = _pairwise_distance(rx_symbols, const.constellation).min(axis=1)
+            # ax.scatter(rx_symbols.real, rx_symbols.imag, color=color, alpha=0.5)
+            # ax.set_ylabel(f"SNR {snr}dB", fontsize=8)
+            # const.plot(ax=axs[i, j], flag = 2)
+            # if not (const.modulation in rx_sym and channel.name in rx_sym[const.modulation]):
+            #     rx_sym[const.modulation][channel.name] = rx_symbols.reshape(1, -1)
+            # else:
+            #     rx_data = rx_sym[const.modulation][channel.name]
+            #     rx_sym[const.modulation][channel.name] = np.concatenate((rx_data, rx_symbols.reshape(1,-1)))
         axs[-1, j].plot(all_snr, bit_error_rate[:,j], color="tab:blue")
         axs[-1, j].plot(all_snr, bit_error_rate[:,j], 'x', color="tab:orange")    
         axs[-1, j].set_xlabel("SNR (dB)")

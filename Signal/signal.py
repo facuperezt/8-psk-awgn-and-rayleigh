@@ -21,8 +21,10 @@ class Signal:
         n = int(np.log2(len(self.constellation.constellation)))
         symbols = np.zeros(int(len(self.bit_stream)//n), dtype=complex)
         for i in range(0, len(self.bit_stream), n):
+            _i = min(i//n, len(symbols) - 1)
             _bits = "".join([str(a) for a in self.bit_stream[i:i+n]])
-            symbols[i//n] = self.constellation.constellation[int(_bits, 2)]
+            symbols[_i] = self.constellation.constellation[int(_bits, 2)]
+        self.bit_stream = self.bit_stream[:_i*n + 1]
         return symbols
 
     def encode(self, bit_stream: np.ndarray) -> np.ndarray:
