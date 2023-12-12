@@ -22,7 +22,7 @@ def update_plot():
     axs[1].set_title(f"BER: {bit_error_rate_right:.4f}", fontsize=10)
     axs[1].axis('on')
     figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    figure_canvas_agg.get_tk_widget().pack()
 
 def get_parts(side: str = 'LEFT') -> (sg.Column, sg.Column):
     control_col = [
@@ -66,7 +66,7 @@ control_col2, plot_col2 = get_parts('RIGHT')
 layout = [[control_col, plot_col, control_col2]]
 
 window = sg.Window('Demo Application - Embedding Matplotlib In PySimpleGUI',
-                     layout, location=(0,0), finalize=True)
+                     layout, location=(0,0), finalize=True, keep_on_top=True, resizable=True)
 fig, axs = plt.subplots(1, 2, figsize=(5, 3))
 figure_canvas_agg = FigureCanvasTkAgg(fig, window['-CANVAS-'].TKCanvas)
 figure_canvas_agg.draw()
