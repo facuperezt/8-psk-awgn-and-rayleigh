@@ -3,7 +3,7 @@ import numpy as np
 class AWGNChannel:
     name = "AWGN"
 
-    def __init__(self, snr: float):
+    def __init__(self, snr: float, *args, **kwargs):
         self.snr = snr
         self.noise = None
 
@@ -15,7 +15,7 @@ class AWGNChannel:
 class SingleRayleighChannel:
     name = "Unequalized Single Rayleigh"
 
-    def __init__(self, snr: float, equalize: bool = False):
+    def __init__(self, snr: float, equalize: bool = False, *args, **kwargs):
         self.snr = snr
         self.equalize = equalize
 
@@ -34,18 +34,19 @@ class SingleRayleighChannel:
 class EqualizedSingleRayleighChannel(SingleRayleighChannel):
     name = "Equalized SingleRayleigh"
 
-    def __init__(self, snr: float):
+    def __init__(self, snr: float, *args, **kwargs):
         super().__init__(snr, equalize=True)
 
 class MultipleRayleighChannels(SingleRayleighChannel):
-    def __init__(self, snr: float, num_channels: int = 20000):
+    def __init__(self, snr: float, num_channels: int = 5, *args, **kwargs):
         super().__init__(snr)
-        self.num_channels = num_channels
+        self.num_channels = int(num_channels)
+        self.equalize = kwargs.get("equalize", True)
 
     def __call__(self, symbols: np.ndarray) -> np.ndarray:
         noise = np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels)
         noise *= 10**(-self.snr/20)/np.sqrt(2)
-        h = 1/np.sqrt(2) * (np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels))
+        h = np.random.rayleigh(0.25, (1,self.num_channels)) * 1/np.sqrt(2) * (np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels))
 
         symbols = symbols.reshape(-1, 1)
         unequalized = symbols * h + noise

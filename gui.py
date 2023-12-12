@@ -6,13 +6,13 @@ import numpy as np
 from Signal.plotting import plot_constellation
 from Signal.signal import Signal
 from Signal.constellation import Constellation
-from Multipath.rayleigh_channel import AWGNChannel, SingleRayleighChannel, EqualizedSingleRayleighChannel
+from Multipath.rayleigh_channel import AWGNChannel, SingleRayleighChannel, MultipleRayleighChannels
 
 def update_plot():
     axs[0].clear()
     axs[1].clear()
-    channel_left = channel_map[values[f'-CHANNEL LEFT-']](float(values['-SNR-']))
-    channel_right = channel_map[values[f'-CHANNEL RIGHT-']](float(values['-SNR-']))
+    channel_left = channel_map[values[f'-CHANNEL LEFT-']](values["-SNR-"], num_channels=values['-N_CHANNELS LEFT-'], equalize=values['-EQUALIZE LEFT-'])
+    channel_right = channel_map[values[f'-CHANNEL RIGHT-']](values["-SNR-"], num_channels=values['-N_CHANNELS RIGHT-'], equalize=values['-EQUALIZE RIGHT-'])
     rx_signal_left = plot_constellation(channel_left, signal_left, axs[0])
     rx_signal_right = plot_constellation(channel_right, signal_right, axs[1])
     bit_error_rate_left = np.sum(np.abs(rx_signal_left.bit_stream - signal_left.bit_stream))/len(bit_stream)
@@ -32,13 +32,12 @@ def get_parts(side: str = 'LEFT') -> (sg.Column, sg.Column):
         [sg.Text('SNR (dB)', font='Any 15')],
         [sg.Slider(range=(-10, 50), default_value=0, size=(20, 15), orientation='horizontal', key=f'-SNR-', enable_events=True)],
         [sg.Text(f'Transmission Channel {side}', font='Any 15')],
-        [sg.DropDown(['AWGN', 'Equalized Single Rayleigh'], default_value='AWGN', key=f'-CHANNEL {side}-', size=(20, 1))],
-        # [sg.Text('Transmission Channel Right', font='Any 15')],
-        # [sg.DropDown(['AWGN', 'Single Rayleigh', 'Equalized Single Rayleigh'], default_value='AWGN', key=f'-CHANNEL {side}-', size=(20, 1))],
+        [sg.DropDown(['AWGN', 'Single Rayleigh', 'Multi Rayleigh'], default_value='AWGN', key=f'-CHANNEL {side}-', size=(20, 1))],
+        [sg.Checkbox('Equalize (Only affects Rayleigh channels)', default=False, key=f'-EQUALIZE {side}-', size=(50, 1))],
+        [sg.Text('Number of Channels (Only affects Multi Rayleigh)', font='Any 15')],
+        [sg.InputText('5', key=f'-N_CHANNELS {side}-', size=(20, 1))],
         [sg.Text(f'Modulation Type {side}', font='Any 15')],
         [sg.DropDown(['BPSK', '4-QAM', '8-PSK', '16-PSK'], default_value='8-PSK', key=f'-MODULATION {side}-', size=(20, 1))],
-        # [sg.Text('Modulation Type', font='Any 15')],
-        # [sg.DropDown(['BPSK', '4-QAM', '8-PSK', '16-PSK'], default_value='8-PSK', key=f'-MODULATION {side}-', size=(20, 1))],
     ]
     if side == 'RIGHT':
         control_col = control_col[5:]
@@ -50,7 +49,7 @@ def get_parts(side: str = 'LEFT') -> (sg.Column, sg.Column):
 
     plot_col = [
         [sg.Text('Plot', font='Any 15')],
-        [sg.Canvas(size=(500, 500), key=f'-CANVAS-')],
+        [sg.Canvas(size=(300, 300), key=f'-CANVAS-')],
     ]
 
     return sg.Column(control_col), sg.Column(plot_col)
@@ -58,7 +57,7 @@ def get_parts(side: str = 'LEFT') -> (sg.Column, sg.Column):
 channel_map = {
     'AWGN': AWGNChannel,
     'Single Rayleigh': SingleRayleighChannel,
-    'Equalized Single Rayleigh': EqualizedSingleRayleighChannel,
+    'Multi Rayleigh': MultipleRayleighChannels,
 }
 
 control_col, plot_col = get_parts('LEFT')
@@ -67,12 +66,11 @@ control_col2, plot_col2 = get_parts('RIGHT')
 layout = [[control_col, plot_col, control_col2]]
 
 window = sg.Window('Demo Application - Embedding Matplotlib In PySimpleGUI',
-                     layout, finalize=True)
-
-fig, axs = plt.subplots(1, 2, figsize=(5, 4), dpi=100)
+                     layout, location=(0,0), finalize=True)
+fig, axs = plt.subplots(1, 2, figsize=(5, 3))
 figure_canvas_agg = FigureCanvasTkAgg(fig, window['-CANVAS-'].TKCanvas)
 figure_canvas_agg.draw()
-figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+figure_canvas_agg.get_tk_widget().pack()
 axs[0].axis('off')
 axs[1].axis('off')
 
@@ -97,8 +95,8 @@ while True:
         snr_range = np.arange(-10, 50, 1)
         bit_error_rates = np.zeros((len(snr_range), 2))
         for snr in snr_range:
-            channel_left = channel_map[values[f'-CHANNEL LEFT-']](snr)
-            channel_right = channel_map[values[f'-CHANNEL RIGHT-']](snr)
+            channel_left = channel_map[values[f'-CHANNEL LEFT-']](snr, values['-N_CHANNELS LEFT-'], equalize=values['-EQUALIZE LEFT-'])
+            channel_right = channel_map[values[f'-CHANNEL RIGHT-']](snr, values['-N_CHANNELS RIGHT-'], equalize=values['-EQUALIZE RIGHT-'])
             rx_signal_left = plot_constellation(channel_left, signal_left, axs[0])
             rx_signal_right = plot_constellation(channel_right, signal_right, axs[1])
             bit_error_rate_left = np.sum(np.abs(rx_signal_left.bit_stream - signal_left.bit_stream))/len(bit_stream)
