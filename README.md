@@ -1,11 +1,13 @@
 # AWGN vs Rayleigh Fading with different modulations.
 
-## Usage
-
 ### Plots
 Can be found in `generated_plots`
 
-### For real time comparisson between channels and modulation types
+## Usage
+### Install dependencies
+`python -m pip install -r requirements.txt`
+
+### Launch App
 `python gui.py`
 
 #### Little introduction
