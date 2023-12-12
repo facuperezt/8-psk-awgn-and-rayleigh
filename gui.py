@@ -32,19 +32,21 @@ def get_parts(side: str = 'LEFT') -> (sg.Column, sg.Column):
         [sg.Text('SNR (dB)', font='Any 15')],
         [sg.Slider(range=(-10, 50), default_value=0, size=(20, 15), orientation='horizontal', key=f'-SNR-', enable_events=True)],
         [sg.Text(f'Transmission Channel {side}', font='Any 15')],
-        [sg.DropDown(['AWGN', 'Single Rayleigh', 'Equalized Single Rayleigh'], default_value='AWGN', key=f'-CHANNEL {side}-', size=(20, 1))],
+        [sg.DropDown(['AWGN', 'Equalized Single Rayleigh'], default_value='AWGN', key=f'-CHANNEL {side}-', size=(20, 1))],
         # [sg.Text('Transmission Channel Right', font='Any 15')],
         # [sg.DropDown(['AWGN', 'Single Rayleigh', 'Equalized Single Rayleigh'], default_value='AWGN', key=f'-CHANNEL {side}-', size=(20, 1))],
         [sg.Text(f'Modulation Type {side}', font='Any 15')],
         [sg.DropDown(['BPSK', '4-QAM', '8-PSK', '16-PSK'], default_value='8-PSK', key=f'-MODULATION {side}-', size=(20, 1))],
         # [sg.Text('Modulation Type', font='Any 15')],
         # [sg.DropDown(['BPSK', '4-QAM', '8-PSK', '16-PSK'], default_value='8-PSK', key=f'-MODULATION {side}-', size=(20, 1))],
-        [sg.Button('Generate Signal', key='-NEW SIGNAL-', size=(15, 1))],  #, sg.Button('Plot BER Comparison', size=(15, 1))],
-        [sg.Button('Exit', size=(10, 1))]
-
     ]
     if side == 'RIGHT':
-        control_col = control_col[5:9]
+        control_col = control_col[5:]
+    else:
+        control_col += [
+            [sg.Button('Generate Signal', key='-NEW SIGNAL-', size=(15, 1))],  #, sg.Button('Plot BER Comparison', size=(15, 1))],
+            [sg.Button('Exit', size=(10, 1))]
+        ]
 
     plot_col = [
         [sg.Text('Plot', font='Any 15')],
