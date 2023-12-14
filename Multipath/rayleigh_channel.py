@@ -46,7 +46,7 @@ class MultipleRayleighChannels(SingleRayleighChannel):
     def __call__(self, symbols: np.ndarray) -> np.ndarray:
         noise = np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels)
         noise *= 10**(-self.snr/20)/np.sqrt(2)
-        h = np.random.rayleigh(0.25, (1,self.num_channels)) * 1/np.sqrt(2) * (np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels))
+        h = np.random.rayleigh(0.1, (1,self.num_channels)) * 1/np.sqrt(2) * (np.random.randn(len(symbols), self.num_channels) + 1j*np.random.randn(len(symbols), self.num_channels))
 
         symbols = symbols.reshape(-1, 1)
         unequalized = symbols * h + noise
